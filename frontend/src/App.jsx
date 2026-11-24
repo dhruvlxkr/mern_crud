@@ -44,39 +44,33 @@ function App() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.username.trim() || !formData.email.trim()) {
-      setError("Username aur Email bharna zaroori hai!");
+    if (
+      !formData.username.trim() ||
+      !formData.email.trim() ||
+      !formData.job.trim() ||
+      !formData.number.trim()
+    ) {
+      setError("All Field Filled Mendontry");
       return;
     }
 
     setError("");
 
-    if (editId !== null) {
-      setUsers(
-        users.map((user) =>
-          user.id === editId ? { ...user, ...formData } : user,
-        ),
-      );
-      setEditId(null);
-
-      const newUser = {
-        id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
-        ...formData,
-      };
-      setUsers([...users, newUser]);
+    if (editId == null) {
+      try {
+        const res = await fetch("http://localhost:8001/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+      } catch (error) {}
     }
-
-    setFormData({
-      username: "",
-      email: "",
-      job: "",
-      number: "",
-    });
   };
-
   const handleEdit = (user) => {
     setEditId(user.id);
     setFormData({
@@ -115,17 +109,6 @@ function App() {
   return (
     <div className="container">
       <div className="crud-card mb-4">
-        <div className="card-header">
-          <div className="header-title">
-            <h2>{editId !== null ? "Edit User Details" : "Add New User"}</h2>
-            <p>
-              {editId !== null
-                ? `User ID #${editId} ki details update karein`
-                : "Naya user create karne ke liye details bharein"}
-            </p>
-          </div>
-        </div>
-
         {error && <div className="form-alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="crud-form">
@@ -198,13 +181,6 @@ function App() {
       </div>
 
       <div className="crud-card">
-        <div className="card-header">
-          <div className="header-title">
-            <h2>User Management</h2>
-            <p>Kul {users.length} users registered hain</p>
-          </div>
-        </div>
-
         <div className="table-responsive">
           <table className="crud-table">
             <thead>
